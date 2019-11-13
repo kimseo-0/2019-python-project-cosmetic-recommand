@@ -115,13 +115,18 @@ for product_title_quary in product_title_quary_list :
     product_brand = get_html_by_class(product_info_html,"card-text-secondary").text
     product_name = get_html_by_class(product_info_html,"card-text-primary").text 
 
+    # 상품 id 추출
     p = re.compile('[0-9]+') 
     product_id = str((p.findall(product_title_quary))[0])
+    
+    # 상품 id, 상품 순위, 상품 카테고리, 상품 브랜드, 상품 url, 상품 색상명, 상품 색상별 이미지 src
     product_info = set_product_info(product_id, product_ranking, product_category,product_brand,product_name,product_url,product_color_name_list,product_image_src_list)
     
+    # dir 생성
     create_forlder(os.getcwd()+"/image/"+product_category)
     create_forlder(os.getcwd()+"/image/"+product_category+"/"+product_id)
 
+    # 이미지 다운로드
     for i in range(len(product_color_name_list)) :
         download_image_by_url(product_category+"/"+product_id+"/"+product_color_name_list[i],product_image_src_list[i+1])
     

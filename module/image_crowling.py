@@ -62,7 +62,16 @@ def set_product_info(product_id, product_ranking, product_category,product_brand
 
     return product_info
 
-def get_product_info(product_info_html, category_class, brand_class, name_class) :
+def get_product_info(product_info_html, 
+                    product_id, 
+                    product_ranking, 
+                    category_class, 
+                    brand_class, 
+                    name_class,
+                    product_url, 
+                    product_color_name_list, 
+                    product_image_src_list) :
+                    
     product_category = get_html_by_class(product_info_html,category_class).text
     product_brand = get_html_by_class(product_info_html,brand_class).text
     product_name = get_html_by_class(product_info_html,name_class).text 

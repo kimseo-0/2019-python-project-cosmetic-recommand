@@ -20,8 +20,8 @@ product_title_quary_list = list(map(lambda product_title_html : ic.get_attr_list
     
 # 모든 상품의 정보 저장
 # 모든 상품을 카테고리, 상품명 별로 각 색상별 상품 이미지 다운로드
-product_ranking = 10
-for product_title_quary in product_title_quary_list[10::] :
+product_ranking = 0
+for product_title_quary in product_title_quary_list :
     
     # 상품 순위 - ranking 순대로 크롤링 되므로
     product_ranking += 1
@@ -50,3 +50,4 @@ for product_title_quary in product_title_quary_list[10::] :
     # 이미지 다운로드
     for i in range(len(product_color_name_list)) :
         ic.download_image_by_url(product_id+"/"+str(i),product_image_src_list[i+1])
+    break

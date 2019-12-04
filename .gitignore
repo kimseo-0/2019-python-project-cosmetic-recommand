@@ -1,2 +1,6 @@
-node_modules/
 image/
+image_data/
+extract_image/
+test/
+test.py
+*.jpg

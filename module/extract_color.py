@@ -2,29 +2,30 @@ import numpy as np
 import cv2
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
+import colorsys
 
-def show_image(imgfile) :
-    '''
-    show image
-    '''
-    img = cv2.imread(imgfile, cv2.IMREAD_COLOR)
+def RGB_To_HSL(rgb):
+    r = rgb[0]/255
+    g = rgb[1]/255
+    b = rgb[2]/255
+    
+    hls = colorsys.rgb_to_hls(r, g, b)
 
-    cv2.imshow('image', img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    h = hls[0] * 360
+    l = hls[1] * 100
+    s = hls[2] * 100
 
-def read_image(imgfile) :
-    '''
-    read image
-    BGR -> RGB
-    reshape D3-> D2
+    return [h,s,l]
 
-    return image
-    '''
-    image = cv2.imread(imgfile)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = image.reshape((image.shape[0] * image.shape[1], 3)) # height, width 통합
-    return image
+
+def promise_color(rgb):
+    hsl = RGB_To_HSL(rgb)
+    s = hsl[1]
+    l = hsl[2]
+
+    if s-((l-50)**2)/20-20 > 0 and 10 < l < 90:
+        return True
+    return False
 
 def centroid_histogram(clt):
     '''
@@ -53,17 +54,35 @@ def get_mean_colors_image(num,image) :
     clt.fit(image)
     clt_center = clt.cluster_centers_
     hist = centroid_histogram(clt)
-
     return hist, clt_center
 
-def get_mean_color_image(hist,clt_center) :
+def get_mean_color_of_image(hist,clt_center) :
     mean_color = [0,0,0]
-    for i in range(3) :
-        for j in range(len(hist)) :
-            mean_color[i] += clt_center[j][i] * hist[j]
-        mean_color[i] = mean_color[i]
+    need_clt = []
+    need_hist = []
+    sum_hist = 0
+    list(hist)
+    clt_center = list(map(lambda elem : list(elem), clt_center))
+
+    for i in range(len(hist)) :
+        if promise_color(clt_center[i]) : #clt_center[i][0]>50 :
+            need_clt.append(clt_center[i])
+            need_hist.append(hist[i])
+            sum_hist += float(hist[i])
+            
+    for i in range(len(need_hist)) :
+        need_hist[i] = need_hist[i]/sum_hist
     
-    return mean_color
+    for i in range(3) :
+        for j in range(len(need_hist)) :
+            mean_color[i] += need_clt[j][i] * need_hist[j]
+        mean_color[i] = mean_color[i]
+
+    np.array(mean_color)
+    np.array(need_hist)
+    need_clt = (map(lambda elem : np.array(elem), need_clt))
+
+    return mean_color , need_hist, need_clt
 
 def plot_colors_bar(hist, centroids):
     # initialize the bar chart representing the relative frequency
@@ -91,29 +110,53 @@ def mean_color_box(mean_color) :
     mean_color = np.array(mean_color)
     box = np.zeros((50, 50, 3), dtype="uint8")
     cv2.rectangle(box, (0, 0), (50, 50),mean_color.astype("uint8").tolist(), -1)
-    
+
     return box
-   
-def show_color(bar):
-    plt.figure()
+
+def show_image(imgfile) :
+    '''
+    show image
+    '''
+    img = cv2.imread(imgfile, cv2.IMREAD_COLOR)
+
+    cv2.imshow('image', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+def read_image(imgfile) :
+    '''
+    read image
+    BGR -> RGB
+    reshape D3-> D2
+
+    return image
+    '''
+    image = cv2.imread(imgfile)
+    # cv2.imshow(imgfile,image)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = image.reshape((image.shape[0] * image.shape[1], 3)) # height, width 통합
+    return image
+
+def show_color(bar, num):
+    plt.figure(num)
     plt.axis("off")
     plt.imshow(bar)
     plt.show()
 
-# test
 def extract_color(imgfile) :
     image = read_image(imgfile)
 
     hist, clt_center = get_mean_colors_image(5,image)
 
-    mean_color = get_mean_color_image(hist,clt_center)
+    mean_rgb_color, need_hist, need_clt = get_mean_color_of_image(hist,clt_center)
 
-    # show_color(plot_colors_bar(hist, clt_center))
-    # show_color(mean_color_box(mean_color))
+    show_color(plot_colors_bar(need_hist, need_clt),1)
+    show_color(mean_color_box(mean_rgb_color),2)
 
-
-imgfile = "image/32181/51.jpg"
-extract_color(imgfile)
-
+    mean_hsl_color = RGB_To_HSL(mean_rgb_color)
+    
+    return mean_hsl_color
+    
+#extract_color("../image/0.jpg")
 
 # https://inyl.github.io/programming/2017/07/31/opencv_image_color_cluster.html

@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import colorsys
 
 def RGB_To_HSL(rgb):
+    '''
+    rgb로 나타낸 색상을 hsl 변환하여 반환
+    '''
     r = rgb[0]/255
     g = rgb[1]/255
     b = rgb[2]/255
@@ -19,6 +22,12 @@ def RGB_To_HSL(rgb):
 
 
 def promise_color(rgb):
+    '''
+    유효한 색상 추출
+    해당 범위 안에 드는 색상 -> true
+
+    해당 범위의 색상만 mask에 포함하기 위해서
+    '''
     hsl = RGB_To_HSL(rgb)
     s = hsl[1]
     l = hsl[2]
@@ -49,6 +58,10 @@ def get_mean_colors_image(num,image) :
     cal mean each parts
 
     return mean color list, ratio of each color list (num elements)
+
+    KMeans 알고리즘에 따라 비슷한 색상으로(군집화)
+    num 만큼 이미지를 나누고,
+    각 나뉜 이미지의 평균 색상과 이미지에서 차지하는 비율의 리스트
     '''
     clt = KMeans(n_clusters = num)
     clt.fit(image)
@@ -57,6 +70,13 @@ def get_mean_colors_image(num,image) :
     return hist, clt_center
 
 def get_mean_color_of_image(hist,clt_center) :
+    '''
+    input 받은 색상과 해당 색상의 비율을 고려하여 
+    평균 색을 계산한다.
+
+    만약, 해당 색상이 유효하지 않을 경우 제외하여
+    전체 비율을 재조정하여 계산한다.
+    '''
     mean_color = [0,0,0]
     need_clt = []
     need_hist = []
@@ -85,6 +105,11 @@ def get_mean_color_of_image(hist,clt_center) :
     return mean_color , need_hist, need_clt
 
 def plot_colors_bar(hist, centroids):
+    '''
+    색상 bar를 생성
+    각 색상의 비율에 따라 bar에서 차지하는 면적을 설정하여,
+    각 색상이 차지하는 비중을 시각화 하여 보여줄 수 있다.
+    '''
     # initialize the bar chart representing the relative frequency
     # of each of the colors
     bar = np.zeros((50, 300, 3), dtype="uint8")
@@ -106,6 +131,7 @@ def mean_color_box(mean_color) :
     '''
     list -> np.array
     mean color box
+    색상 박스 이미지 생성
     '''
     mean_color = np.array(mean_color)
     box = np.zeros((50, 50, 3), dtype="uint8")
@@ -126,7 +152,8 @@ def show_image(imgfile) :
 def read_image(imgfile) :
     '''
     read image
-    BGR -> RGB
+    BGR -> RGB 
+    (open cv에서 이미지 읽을 때 bgr로 읽기 때문에 rgb로 변환하여 띄워준다. )
     reshape D3-> D2
 
     return image
@@ -144,6 +171,9 @@ def show_color(bar, num):
     plt.show()
 
 def extract_color(imgfile) :
+    '''
+    색 추출 함수
+    '''
     image = read_image(imgfile)
 
     hist, clt_center = get_mean_colors_image(5,image)

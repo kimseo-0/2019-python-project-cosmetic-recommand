@@ -2,8 +2,8 @@ import numpy as np
 import cv2 as cv
 import sys
 
-from module import extract_color as exc
-from module import product as pd
+from my_module import extract_color as exc
+from my_module import product as pd
 
 class Grabcut:
     BLUE = [255,0,0]        # rectangle color
@@ -83,9 +83,9 @@ class Grabcut:
             filename = self.filename
 
         self.img = cv.imread(cv.samples.findFile(filename))
-        self.img2 = self.img.copy()                               # a copy of original image
-        self.mask = np.zeros(self.img.shape[:2], dtype = np.uint8) # mask initialized to PR_BG
-        self.output = np.zeros(self.img.shape, np.uint8)           # output image to be shown
+        self.img2 = self.img.copy()                                # 원본 이미지 copy 
+        self.mask = np.zeros(self.img.shape[:2], dtype = np.uint8) # mask 초기화
+        self.output = np.zeros(self.img.shape, np.uint8)           # output 이미지 초기화
 
         # input and output windows
         cv.namedWindow('output')
@@ -113,16 +113,19 @@ class Grabcut:
                 self.value = self.DRAW_FG
             elif k == ord('3'): # PR_BG drawing
                 self.value = self.DRAW_PR_BG
-            elif k == ord('4'):
+            elif k == ord('4'): # PR_FG drawing
                 self.value == self.DRAW_PR_FG
+            elif k == ord('c'): # copy input image to output
+                print("copy image")
+                self.mask = np.ones(self.img.shape[:2], dtype = np.uint8)
             elif k == ord('s'): # save image
                 bar = np.zeros((self.img.shape[0], 5, 3), np.uint8)
                 res = np.hstack((bar, self.output))
-                cv.imwrite('extract_image/'+self.product_id+"/"+self.color_id+'.png', res)
-                color_data = exc.extract_color('extract_image/'+self.product_id+"/"+self.color_id+'.png')
+                resultfile = 'extract_image/'+self.product_id+"/"+self.color_id+'.png' # 해당 디렉토리에 추출된 이미지 저장
+                cv.imwrite(resultfile, res)
+                color_data = exc.extract_color(resultfile)                             # 저장된 이미지에서 색 추출
                 print(color_data)
-                pd.add_prodcut_color_RGB_to_file(self.product_id,self.color_id,color_data)
-                
+                pd.add_prodcut_color_to_file(self.product_id,self.color_id,color_data) # 추출할 색 이미지 데이터 파일에 저장
                 print(" Result saved as image \n")
             elif k == ord('r'): # reset everything
                 print("resetting \n")
@@ -133,9 +136,9 @@ class Grabcut:
                 self.rect_over = False
                 self.value = self.DRAW_FG
                 self.img = self.img2.copy()
-                self.mask = np.zeros(self.img.shape[:2], dtype = np.uint8) # mask initialized to PR_BG
-                self.output = np.zeros(self.img.shape, np.uint8)           # output image to be shown
-            elif k == ord('n'): # segment the image
+                self.mask = np.zeros(self.img.shape[:2], dtype = np.uint8) # mask 초기화
+                self.output = np.zeros(self.img.shape, np.uint8)           # output 이미지 초기화
+            elif k == ord('n'): # input에서 전경(FG)으로 마스킹한 부분을 output에 표시
                 print(""" For finer touchups, mark foreground and background after pressing keys 0-3
                 and again press 'n' \n""")
                 try :
@@ -159,7 +162,7 @@ class Grabcut:
 
 if __name__ == '__main__':
     print(__doc__)
-    image = Grabcut("model.jpg")
-    image.run()
+    image = Grabcut("test","test","model.jpg")
+    image.grabcut_image()
     
 # https://github.com/opencv/opencv/blob/master/samples/python/grabcut.py

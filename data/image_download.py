@@ -5,14 +5,15 @@ import time
 import urllib.request
 from bs4 import BeautifulSoup
 
-from module import image_crowling as ic
-from module import product as pd
+from my_module import image_crowling as ic
+from my_module import product as pd
 
 # 크롤링할 홈페이지 base url
 base_url = "https://www.powderroom.co.kr"
 
 # 크롤링 base_url+"/rankings/c3100" -> 립스틱
-base_html = asyncio.get_event_loop().run_until_complete(ic.get_html_to_web(base_url + "/rankings/c3100"))
+# asyncio 모듈을 이용하여 렌더링이 모두 완료 될 때 까지 기다린다.
+base_html = asyncio.get_event_loop().run_until_complete(ic.get_html_to_web(base_url + "/rankings/c3100")) 
 base_html = BeautifulSoup(base_html,"html.parser")
 
 # 상품 타이틀 html list -> 각 상품 url quary list  -> 각 상품별 url list
@@ -53,7 +54,7 @@ for product_title_quary in product_title_quary_list :
     for i in range(len(product_color_name_list)) :
 
         # 이미지 다운로드
-        #ic.download_image_by_url(product_id+"/"+str(i),product_image_src_list[i+1])
+        ic.download_image_by_url(product_id+"/"+str(i),product_image_src_list[i+1])
 
         # 이미지 상품의 각 색상별 정보 저장
         pd.set_product_color_list_to_file("image_data/"+product_id+"/"+str(i)+".txt",

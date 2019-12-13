@@ -4,8 +4,8 @@ import re
 import time
 from bs4 import BeautifulSoup
 
-from module import image_crowling as ic
-from module import product as pd
+from my_module import image_crowling as ic
+from my_module import product as pd
 
 # 크롤링할 홈페이지 base url
 base_url = "https://www.powderroom.co.kr"
